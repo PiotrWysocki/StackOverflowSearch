@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">StackOverflow Search</string>
+    <string name="search_button">Search</string>
+    <string name="error_retry_button">Retry</string>
+    <string name="refresh_image_button">Refresh</string>
+    <string name="hint_edit_text">Search text</string>
+    <string name="added_by_text_view">Added by</string>
+    <string name="avatar_image_view">Avatar</string>
+</resources>
