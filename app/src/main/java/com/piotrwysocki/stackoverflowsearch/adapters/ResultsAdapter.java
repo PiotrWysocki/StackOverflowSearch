@@ -18,10 +18,6 @@ import com.piotrwysocki.stackoverflowsearch.models.Item;
 
 import java.util.List;
 
-/**
- * Created by Piotrek on 2017-07-14.
- */
-
 public class ResultsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final int ITEM = 0;
@@ -31,8 +27,8 @@ public class ResultsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private Context mContext;
     private int mRowLayout;
 
-    private boolean hasLoadingAdded = false;
-    private boolean hasRetryPageLoad = false;
+    private boolean hasLoadingAdded;
+    private boolean hasRetryPageLoad;
 
     private String mErrorMessage;
 
@@ -91,26 +87,32 @@ public class ResultsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 int answerCount = item.getAnswerCount();
                 String stringAnswerCount;
                 if (answerCount == 1) {
-                    stringAnswerCount = Integer.toString(answerCount) + "\nanswer";
+                    stringAnswerCount = Integer.toString(answerCount) + mContext.getResources().getString(R.string.answer);
                 } else {
-                    stringAnswerCount = Integer.toString(answerCount) + "\nanswers";
+                    stringAnswerCount = Integer.toString(answerCount) + mContext.getResources().getString(R.string.answers);
                 }
                 resultViewHolder.answer.setText(stringAnswerCount);
 
-                String stringProfileImage = item.getOwner().getProfileImage();
-                if (stringProfileImage == null || stringProfileImage.isEmpty() || stringProfileImage.startsWith("https://www.gravatar.com")) {
-                    resultViewHolder.image.setVisibility(View.GONE);
-                } else {
-                    resultViewHolder.image.setVisibility(View.VISIBLE);
-                    Glide.with(mContext)
-                            .load(stringProfileImage)
-                            .into(resultViewHolder.image);
-                }
-
-                String title = "Q: " + item.getTitle();
+                String title = mContext.getResources().getString(R.string.question) + item.getTitle();
                 resultViewHolder.title.setText(title);
 
-                resultViewHolder.name.setText(item.getOwner().getDisplayName());
+                String displayName = "";
+                if (item.getOwner().getDisplayName() != null) {
+                    displayName = item.getOwner().getDisplayName();
+                }
+                resultViewHolder.name.setText(displayName);
+
+                if (item.getOwner().getProfileImage() != null) {
+                    String stringProfileImage = item.getOwner().getProfileImage();
+                    if (stringProfileImage.isEmpty() || stringProfileImage.startsWith(mContext.getResources().getString(R.string.gravatar))) {
+                        resultViewHolder.image.setVisibility(View.GONE);
+                    } else {
+                        resultViewHolder.image.setVisibility(View.VISIBLE);
+                        Glide.with(mContext)
+                                .load(stringProfileImage)
+                                .into(resultViewHolder.image);
+                    }
+                }
 
                 break;
 
@@ -120,8 +122,7 @@ public class ResultsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 if (hasRetryPageLoad) {
                     loadingViewHolder.loadingProgressBar.setVisibility(View.GONE);
                     loadingViewHolder.loadingLinearLayout.setVisibility(View.VISIBLE);
-                    loadingViewHolder.loadingTextView.setText(
-                            mErrorMessage != null ? mErrorMessage : "");
+                    loadingViewHolder.loadingTextView.setText(mErrorMessage);
                 } else {
                     loadingViewHolder.loadingLinearLayout.setVisibility(View.GONE);
                     loadingViewHolder.loadingProgressBar.setVisibility(View.VISIBLE);
@@ -153,6 +154,22 @@ public class ResultsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     public void removeAll() {
         mItems.clear();
+    }
+
+    public boolean isHasLoadingAdded() {
+        return hasLoadingAdded;
+    }
+
+    public void setHasLoadingAdded(boolean hasLoadingAdded) {
+        this.hasLoadingAdded = hasLoadingAdded;
+    }
+
+    public boolean isHasRetryPageLoad() {
+        return hasRetryPageLoad;
+    }
+
+    public void setHasRetryPageLoad(boolean hasRetryPageLoad) {
+        this.hasRetryPageLoad = hasRetryPageLoad;
     }
 
     public void addLoadingFooter() {
@@ -220,5 +237,6 @@ public class ResultsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
 
     }
+
 
 }

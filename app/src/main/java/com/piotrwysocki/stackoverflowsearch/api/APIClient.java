@@ -5,10 +5,6 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-/**
- * Created by Piotrek on 2017-07-14.
- */
-
 public class APIClient {
 
     private static final String BASE_URL = "http://api.stackexchange.com/";

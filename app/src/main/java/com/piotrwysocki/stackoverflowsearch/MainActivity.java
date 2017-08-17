@@ -2,6 +2,7 @@ package com.piotrwysocki.stackoverflowsearch;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
@@ -25,9 +26,20 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.On
 
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragment_container, searchFragment).commit();
-
         }
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (findViewById(R.id.fragment_container) != null) {
+            if (findViewById(R.id.recycler_view) != null) {
+                ActionBar ab = getSupportActionBar();
+                if (ab != null) {
+                    ab.setDisplayHomeAsUpEnabled(true);
+                }
+            }
+        }
     }
 
     @Override
@@ -44,7 +56,10 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.On
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        ActionBar ab = getSupportActionBar();
+        if (ab != null) {
+            ab.setDisplayHomeAsUpEnabled(false);
+        }
     }
 
     @Override
@@ -66,8 +81,11 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.On
             transaction.addToBackStack(null);
             transaction.commit();
 
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
+            ActionBar ab = getSupportActionBar();
+            if (ab != null) {
+                ab.setDisplayHomeAsUpEnabled(true);
+            }
         }
     }
+
 }

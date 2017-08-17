@@ -3,6 +3,7 @@ package com.piotrwysocki.stackoverflowsearch.fragments;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -36,15 +37,22 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-/**
- * Created by Piotrek on 2017-07-13.
- */
 
 public class ResultsFragment extends Fragment implements ResultsAdapterCallback {
 
     public final static String QUERY = "query";
+
     private static final int PAGE_START = 1;
-    String mCurrentQuery = "";
+
+    private static final String ITEMS = "items";
+    private static final String CURRENT_QUERY = "current_query";
+    private static final String HAS_LOADING = "has_loading";
+    private static final String HAS_LAST_PAGE = "has_last_page";
+    private static final String CURRENT_PAGE = "current_page";
+    private static final String HAS_LOADING_ADDED = "has_loading_added";
+    private static final String HAS_RETRY_PAGE_LOAD = "has_retry_page_load";
+
+    private String mCurrentQuery = "";
     private APIService mApiService;
     private Button mButton;
     private LinearLayout mLinearLayout;
@@ -55,6 +63,37 @@ public class ResultsFragment extends Fragment implements ResultsAdapterCallback 
     private boolean hasLoading = false;
     private boolean hasLastPage = false;
     private int mCurrentPage = PAGE_START;
+    private boolean hasLoadingAdded = false;
+    private boolean hasRetryPageLoad = false;
+
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(ITEMS)) {
+                mItems = savedInstanceState.getParcelableArrayList(ITEMS);
+            }
+            if (savedInstanceState.containsKey(CURRENT_QUERY)) {
+                mCurrentQuery = savedInstanceState.getString(CURRENT_QUERY);
+            }
+            if (savedInstanceState.containsKey(HAS_LOADING)) {
+                hasLoading = savedInstanceState.getBoolean(HAS_LOADING);
+            }
+            if (savedInstanceState.containsKey(HAS_LAST_PAGE)) {
+                hasLastPage = savedInstanceState.getBoolean(HAS_LAST_PAGE);
+            }
+            if (savedInstanceState.containsKey(CURRENT_PAGE)) {
+                mCurrentPage = savedInstanceState.getInt(CURRENT_PAGE);
+            }
+            if (savedInstanceState.containsKey(HAS_LOADING_ADDED)) {
+                hasLoadingAdded = savedInstanceState.getBoolean(HAS_LOADING_ADDED);
+            }
+            if (savedInstanceState.containsKey(HAS_RETRY_PAGE_LOAD)) {
+                hasRetryPageLoad = savedInstanceState.getBoolean(HAS_RETRY_PAGE_LOAD);
+            }
+        }
+    }
 
     @Nullable
     @Override
@@ -85,8 +124,19 @@ public class ResultsFragment extends Fragment implements ResultsAdapterCallback 
 
         Bundle args = getArguments();
         if (args != null) {
-            mCurrentQuery = args.getString(QUERY);
+            if (args.containsKey(QUERY)) {
+                mCurrentQuery = args.getString(QUERY);
+            }
         }
+
+        if (hasLoadingAdded) {
+            mResultsAdapter.addLoadingFooter();
+            mResultsAdapter.setHasLoadingAdded(true);
+        } else {
+            mResultsAdapter.setHasLoadingAdded(false);
+        }
+
+        mResultsAdapter.setHasRetryPageLoad(hasRetryPageLoad);
 
         mRecyclerView.addOnScrollListener(new ScrollListener(mLinearLayoutManager) {
             @Override
@@ -110,7 +160,7 @@ public class ResultsFragment extends Fragment implements ResultsAdapterCallback 
 
         mApiService = APIClient.getClient().create(APIService.class);
 
-        if (mCurrentQuery.isEmpty()) {
+        if (mCurrentQuery.isEmpty() || mItems.size() > 0) {
             mProgressBar.setVisibility(View.GONE);
         } else {
             loadFirstPage();
@@ -127,9 +177,9 @@ public class ResultsFragment extends Fragment implements ResultsAdapterCallback 
 
     }
 
-    public void openWebPage(String url) {
-        Uri webpage = Uri.parse(url);
-        Intent intent = new Intent(Intent.ACTION_VIEW, webpage);
+    private void openWebPage(String url) {
+        Uri webPage = Uri.parse(url);
+        Intent intent = new Intent(Intent.ACTION_VIEW, webPage);
         if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
             startActivity(intent);
         }
@@ -173,8 +223,14 @@ public class ResultsFragment extends Fragment implements ResultsAdapterCallback 
                     mProgressBar.setVisibility(View.GONE);
                     mResultsAdapter.addAll(items);
 
-                    if (response.body().isHasMore()) mResultsAdapter.addLoadingFooter();
-                    else hasLastPage = true;
+                    Result result = response.body();
+                    if(result != null) {
+                        if (result.isHasMore()) {
+                            mResultsAdapter.addLoadingFooter();
+                        } else {
+                            hasLastPage = true;
+                        }
+                    }
                 }
             }
 
@@ -195,9 +251,14 @@ public class ResultsFragment extends Fragment implements ResultsAdapterCallback 
                 List<Item> items = fetchItems(response);
                 mResultsAdapter.addAll(items);
 
-                if (response.body().isHasMore()) mResultsAdapter.addLoadingFooter();
-                else hasLastPage = true;
-
+                Result result = response.body();
+                if(result != null) {
+                    if (result.isHasMore()) {
+                        mResultsAdapter.addLoadingFooter();
+                    } else {
+                        hasLastPage = true;
+                    }
+                }
             }
 
             @Override
@@ -209,7 +270,11 @@ public class ResultsFragment extends Fragment implements ResultsAdapterCallback 
 
     private List<Item> fetchItems(Response<Result> response) {
         Result result = response.body();
-        return result.getItems();
+        List<Item> items = new ArrayList<>();
+        if(result != null) {
+            items = result.getItems();
+        }
+        return items;
     }
 
     private Call<Result> callResult() {
@@ -262,4 +327,24 @@ public class ResultsFragment extends Fragment implements ResultsAdapterCallback 
         mCurrentQuery = query;
         loadFirstPage();
     }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList(ITEMS, (ArrayList<? extends Parcelable>) mItems);
+        outState.putString(CURRENT_QUERY, mCurrentQuery);
+        outState.putBoolean(HAS_LOADING, hasLoading);
+        outState.putBoolean(HAS_LAST_PAGE, hasLastPage);
+        outState.putInt(CURRENT_PAGE, mCurrentPage);
+        if (mResultsAdapter.isHasLoadingAdded()) {
+            hasLoadingAdded = true;
+            mResultsAdapter.removeLoadingFooter();
+        } else {
+            hasLoadingAdded = false;
+        }
+        hasRetryPageLoad = mResultsAdapter.isHasRetryPageLoad();
+        outState.putBoolean(HAS_LOADING_ADDED, hasLoadingAdded);
+        outState.putBoolean(HAS_RETRY_PAGE_LOAD, hasRetryPageLoad);
+    }
+
 }

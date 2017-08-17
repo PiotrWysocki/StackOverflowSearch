@@ -3,10 +3,6 @@ package com.piotrwysocki.stackoverflowsearch.listeners;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
-/**
- * Created by Piotrek on 2017-07-15.
- */
-
 public abstract class ScrollListener extends RecyclerView.OnScrollListener {
 
     private LinearLayoutManager layoutManager;

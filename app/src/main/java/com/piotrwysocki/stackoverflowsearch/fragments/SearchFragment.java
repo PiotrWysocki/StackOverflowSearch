@@ -14,12 +14,8 @@ import android.widget.EditText;
 
 import com.piotrwysocki.stackoverflowsearch.R;
 
-/**
- * Created by Piotrek on 2017-07-13.
- */
-
 public class SearchFragment extends Fragment {
-    OnSearchButtonClickedListener mCallback;
+    private OnSearchButtonClickedListener mCallback;
 
     private EditText mSearchEditText;
 
@@ -66,10 +62,12 @@ public class SearchFragment extends Fragment {
     }
 
     private void hideKeyboard() {
-        View view = getView().findFocus();
-        if (view != null) {
-            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        if(getView() != null) {
+            View view = getView().findFocus();
+            if (view != null) {
+                InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
         }
     }
 

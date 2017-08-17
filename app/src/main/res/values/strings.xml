@@ -6,4 +6,9 @@
     <string name="hint_edit_text">Search text</string>
     <string name="added_by_text_view">Added by</string>
     <string name="avatar_image_view">Avatar</string>
+    <string name="question">"Q: "</string>
+    <string name="answer">"\nanswer"</string>
+    <string name="answers">"\nanswers"</string>
+    <string name="gravatar">"https://www.gravatar.com"</string>
+    <string name="refresh_menu">Refresh</string>
 </resources>
